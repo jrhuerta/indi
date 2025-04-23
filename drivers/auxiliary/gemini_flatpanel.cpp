@@ -324,8 +324,8 @@ void GeminiFlatpanel::TimerHit()
         LightIntensityNP.apply();
     }
 
-    bool statusUpdated = updateCoverStatus(coverStatus) |
-                         updateLightStatus(lightStatus) |
+    bool statusUpdated = updateCoverStatus(coverStatus) ||
+                         updateLightStatus(lightStatus) ||
                          updateMotorStatus(motorStatus);
 
     if (statusUpdated)
