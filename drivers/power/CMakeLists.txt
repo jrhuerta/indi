@@ -104,3 +104,11 @@ SET(svbonypowerbox_SRC
 add_executable(indi_svbony_powerbox ${svbonypowerbox_SRC})
 target_link_libraries(indi_svbony_powerbox indidriver)
 install(TARGETS indi_svbony_powerbox RUNTIME DESTINATION bin)
+
+# ########## BigPowerBox Driver ###############
+SET(bigpowerbox_SRC
+    indi_bigpowerbox.cpp)
+
+add_executable(indi_bigpowerbox ${bigpowerbox_SRC})
+target_link_libraries(indi_bigpowerbox indidriver)
+install(TARGETS indi_bigpowerbox RUNTIME DESTINATION bin)
