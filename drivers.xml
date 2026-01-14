@@ -1087,5 +1087,9 @@
             <driver name="BigPowerBox">indi_bigpowerbox</driver>
             <version>1.0</version>
         </device>
+        <device label="BigPowerBox Simple" manufacturer="BigPowerBox">
+            <driver name="BigPowerBox Simple">indi_bigpowerbox_simple</driver>
+            <version>1.0</version>
+        </device>
     </devGroup>
 </driversList>

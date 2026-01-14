@@ -112,3 +112,11 @@ SET(bigpowerbox_SRC
 add_executable(indi_bigpowerbox ${bigpowerbox_SRC})
 target_link_libraries(indi_bigpowerbox indidriver)
 install(TARGETS indi_bigpowerbox RUNTIME DESTINATION bin)
+
+# ########## BigPowerBox Simple Driver ###############
+SET(bigpowerbox_simple_SRC
+    bigpowerbox_simple.cpp)
+
+add_executable(indi_bigpowerbox_simple ${bigpowerbox_simple_SRC})
+target_link_libraries(indi_bigpowerbox_simple indidriver)
+install(TARGETS indi_bigpowerbox_simple RUNTIME DESTINATION bin)
