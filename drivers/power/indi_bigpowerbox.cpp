@@ -89,7 +89,6 @@ bool BigPowerBox::updateProperties()
         // Define additional properties
         if (m_HasPWM && m_PWMPorts.size() > 0)
         {
-            defineProperty(PWMModeDescriptionTP);
             defineProperty(PWMModesNP);
             defineProperty(PWMTempOffsetsNP);
             defineProperty(ResetDewLabelsSP);
@@ -112,7 +111,6 @@ bool BigPowerBox::updateProperties()
     {
         // Delete properties
         deleteProperty(WeatherNP);
-        deleteProperty(PWMModeDescriptionTP);
         deleteProperty(PWMModesNP);
         deleteProperty(PWMTempOffsetsNP);
         deleteProperty(PortCurrentsNP);
@@ -163,7 +161,7 @@ bool BigPowerBox::Handshake()
 
     PortFD = serialConnection->getPortFD();
     
-    LOGF_INFO("Handshake: PortFD=%d", PortFD);
+    LOGF_DEBUG("Handshake: PortFD=%d", PortFD);
     
     if (PortFD <= 0)
     {
@@ -285,16 +283,7 @@ bool BigPowerBox::Handshake()
             snprintf(name, sizeof(name), "OFFSET_%02d", m_PWMPorts[i].portIndex);
             PWMTempOffsetsNP[i].fill(name, "Channel", "%.0f", 0, 10, 1, 0);
         }
-        PWMTempOffsetsNP.fill(getDeviceName(), "PWM_TEMP_OFFSETS", "Temperature Offset (°C)", "PWM Config", IP_RW, 0, IPS_IDLE);
-        
-        // Mode description
-        PWMModeDescriptionTP.resize(1);
-        PWMModeDescriptionTP[0].fill("MODE_DESC", "Mode Values", 
-            "0: Manual (adjustable PWM)\n"
-            "1: On/Off (behave like switch)\n"
-            "2: Dew Heater (auto on when temp < dewpoint)\n"
-            "3: PID Control (dedicated temp sensor feedback)");
-        PWMModeDescriptionTP.fill(getDeviceName(), "PWM_MODE_DESC", "Description", "PWM Config", IP_RO, 60, IPS_IDLE);
+        PWMTempOffsetsNP.fill(getDeviceName(), "PWM_TEMP_OFFSETS", "Offset (°C)", "PWM Config", IP_RW, 0, IPS_IDLE);
     }
 
     // Reset label buttons
@@ -341,7 +330,7 @@ bool BigPowerBox::sendCommand(const char *command, std::string &response, int ti
     // Send command with newline (device expects line ending after commands)
     char commandWithNewline[256];
     snprintf(commandWithNewline, sizeof(commandWithNewline), "%s\n", command);
-    LOGF_INFO("Sending command: %s\\n", command);
+    LOGF_DEBUG("Sending command: %s\\n", command);
     LOGF_DEBUG("PortFD=%d, command length=%zu", PortFD, strlen(commandWithNewline));
     
     int nbytes_written = 0;
@@ -386,7 +375,8 @@ bool BigPowerBox::sendCommand(const char *command, std::string &response, int ti
 
     buffer[nbytes_read] = '\0';
     response = buffer;
-    LOGF_DEBUG("Received %d bytes: %s", nbytes_read, response.c_str());
+    
+    LOGF_DEBUG("Received response (%d bytes): %s", nbytes_read, response.c_str());
     return true;
 }
 
@@ -406,7 +396,7 @@ bool BigPowerBox::ping()
         return false;
     }
     
-    LOGF_INFO("Ping response received: %s", response.c_str());
+    LOGF_DEBUG("Ping response received: %s", response.c_str());
     
     // Response should be ">POK#" but may have trailing characters
     bool success = response.find(">POK") != std::string::npos || response == ">POK#";
@@ -1022,6 +1012,10 @@ void BigPowerBox::TimerHit()
 
 bool BigPowerBox::ISNewSwitch(const char *dev, const char *name, ISState *states, char *names[], int n)
 {
+    // Let parent class handle standard controls (DEBUG, etc.) first
+    if (INDI::DefaultDevice::ISNewSwitch(dev, name, states, names, n))
+        return true;
+    
     if (dev != nullptr && strcmp(dev, getDeviceName()) == 0)
     {
         // Handle Reset Power Labels
@@ -1086,12 +1080,12 @@ bool BigPowerBox::ISNewSwitch(const char *dev, const char *name, ISState *states
             return true;
         }
         
-        // Let PowerInterface handle its switches first
+        // Let PowerInterface handle its switches
         if (PI::processSwitch(dev, name, states, names, n))
             return true;
     }
     
-    return INDI::DefaultDevice::ISNewSwitch(dev, name, states, names, n);
+    return false;
 }
 
 bool BigPowerBox::ISNewNumber(const char *dev, const char *name, double values[], char *names[], int n)
@@ -1346,7 +1340,7 @@ bool BigPowerBox::ISNewText(const char *dev, const char *name, char *texts[], ch
             
             if (changedCount > 0)
             {
-                LOGF_INFO("Updated %d PWM port label(s)", changedCount);
+                LOGF_DEBUG("Updated %d PWM port label(s)", changedCount);
                 // Update all related switch labels
                 syncLabelsToSwitches();
                 // Update PWM config labels (modes and temp offsets)

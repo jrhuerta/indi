@@ -141,7 +141,6 @@ class BigPowerBox : public INDI::DefaultDevice, public INDI::PowerInterface
         // Additional properties for PWM configuration
         INDI::PropertyNumber PWMModesNP{0};
         INDI::PropertyNumber PWMTempOffsetsNP{0};
-        INDI::PropertyText PWMModeDescriptionTP{1};
         INDI::PropertyNumber PortCurrentsNP{0};
         INDI::PropertyNumber InputInfoNP{3};
         
